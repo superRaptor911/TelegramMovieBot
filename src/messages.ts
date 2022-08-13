@@ -7,7 +7,7 @@ export function getListOfMoviesAsMessage(
     return 'No movies found';
   }
 
-  let message = 'Movies found: \n 0. Back \n';
+  let message = 'Movies found: \n0. Back \n';
   for (let i = 0; i < searchResults.data.movies.length; i++) {
     message += `${i + 1}. ${searchResults.data.movies[i].title} \n`;
   }
