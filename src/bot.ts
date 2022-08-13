@@ -46,6 +46,9 @@ export async function handleMovieSearch(
 
   try {
     const movieName = msg.text.replaceAll('/', '');
+    if (movieName == 'start') {
+      return;
+    }
     console.log(`Searching for ${movieName}`);
     const movies = await searchMovies(movieName);
 
