@@ -73,10 +73,17 @@ export async function handleMovieSelection(
     }
 
     const num = parseInt(input, 10);
+    if (num === 0) {
+      setUserState(userId, STATE_USER_IDLE, []);
+      bot.sendMessage(chatId, 'Back to search');
+      return;
+    }
+
     const movies = getUserState(userId).data;
     if (num < 1 || num > movies.length) {
       throw `input is out of range: ${num}`;
     }
+
     const torrents = movies[num - 1].torrents;
     bot.sendMessage(chatId, getTorrentLinkFromTorrents(torrents));
     setUserState(userId, STATE_USER_IDLE, []);
