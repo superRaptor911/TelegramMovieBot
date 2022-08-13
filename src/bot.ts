@@ -47,6 +47,10 @@ export async function handleMovieSearch(
   try {
     const movieName = msg.text.replaceAll('/', '');
     if (movieName == 'start') {
+      bot.sendMessage(
+        chatId,
+        "I'm ready to search for movies! enter to search for movies",
+      );
       return;
     }
     console.log(`Searching for ${movieName}`);
