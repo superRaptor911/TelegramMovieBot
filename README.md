@@ -1,4 +1,4 @@
-# M1 BOT
+# Telegram Movie BOT
 
 A Telegram bot to fetch movies.
 
