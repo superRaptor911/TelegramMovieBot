@@ -1,18 +1,23 @@
 import { MovieSearchResult, Torrent } from './types/movies.js';
 
-export function getListOfMoviesAsMessage(
+export function getListOfMoviesAsMessages(
   searchResults: MovieSearchResult,
-): string {
+): string[] {
   if (searchResults.data.movies.length === 0) {
-    return 'No movies found';
+    return ['No movies found'];
   }
 
-  let message = 'Movies found: \n0. Back \n';
+  const messages = ['Movies found: \n0. Back \n'];
   for (let i = 0; i < searchResults.data.movies.length; i++) {
-    message += `${i + 1}. ${searchResults.data.movies[i].title} \n`;
+    const movie = searchResults.data.movies[i];
+    messages.push(
+      `${i + 1}. ${movie.title} [${movie.year}] <a href="${
+        movie.medium_cover_image
+      }">&#8205;</a> \n`,
+    );
   }
 
-  return message;
+  return messages;
 }
 
 export function getTorrentLinkFromTorrents(torrents: Torrent[]): string {

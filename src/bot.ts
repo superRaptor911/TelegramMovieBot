@@ -1,10 +1,11 @@
 import TelegramBot from 'node-telegram-bot-api';
 import {
-  getListOfMoviesAsMessage,
+  getListOfMoviesAsMessages,
   getTorrentLinkFromTorrents,
 } from './messages.js';
 import { searchMovies } from './movies.js';
 import { Movie } from './types/movies.js';
+import { delay } from './utility.js';
 
 export const STATE_USER_IDLE = 0;
 export const STATE_USER_SEARCHING = 1;
@@ -49,8 +50,15 @@ export async function handleMovieSearch(
     const movies = await searchMovies(movieName);
 
     setUserState(userId, STATE_USER_SEARCHING, movies.data.movies);
-    const message = getListOfMoviesAsMessage(movies);
-    bot.sendMessage(chatId, message);
+    const messages = getListOfMoviesAsMessages(movies);
+
+    for (let i = 0; i < messages.length; i++) {
+      bot.sendMessage(chatId, messages[i], {
+        parse_mode: 'HTML',
+        disable_web_page_preview: false,
+      });
+      await delay(1200);
+    }
   } catch (e) {
     /* handle error */
     console.error(`main::handleMovieSearch failed to get movies.`, e);

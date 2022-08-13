@@ -21,6 +21,7 @@ export async function searchMovies(
       const results: MovieSearchResult = await search({
         query_term: query,
         limit: limit,
+        sort_by: 'download_count',
       });
       if (!results?.data?.movies) {
         console.error('movies::searchMovies Did not get any movie');
