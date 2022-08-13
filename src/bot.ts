@@ -1,7 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
 import {
   getListOfMoviesAsMessage,
-  getTorrentLinkFromTorrent,
+  getTorrentLinkFromTorrents,
 } from './messages.js';
 import { searchMovies } from './movies.js';
 import { Movie } from './types/movies.js';
@@ -77,8 +77,8 @@ export async function handleMovieSelection(
     if (num < 1 || num > movies.length) {
       throw `input is out of range: ${num}`;
     }
-    const torrent = movies[num - 1].torrents[0];
-    bot.sendMessage(chatId, getTorrentLinkFromTorrent(torrent));
+    const torrents = movies[num - 1].torrents;
+    bot.sendMessage(chatId, getTorrentLinkFromTorrents(torrents));
     setUserState(userId, STATE_USER_IDLE, []);
   } catch (e) {
     /* handle error */

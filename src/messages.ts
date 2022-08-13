@@ -10,9 +10,11 @@ export function getListOfMoviesAsMessage(
   return message;
 }
 
-export function getTorrentLinkFromTorrent(torrent: Torrent): string {
+export function getTorrentLinkFromTorrents(torrents: Torrent[]): string {
   let message = 'Torrents found: \n';
-  message += `${torrent.url} \n`;
+  torrents.forEach(
+    (torrent) => (message += `[${torrent.quality}]\n${torrent.url} \n\n`),
+  );
 
   return message;
 }
