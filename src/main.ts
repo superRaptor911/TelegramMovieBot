@@ -1,34 +1,32 @@
-/**
- * Some predefined delay values (in milliseconds).
- */
-export enum Delays {
-  Short = 500,
-  Medium = 2000,
-  Long = 5000,
+import TelegramBot from 'node-telegram-bot-api';
+import * as dotenv from 'dotenv';
+import {
+  getUserState,
+  handleMovieSearch,
+  handleMovieSelection,
+  STATE_USER_IDLE,
+  STATE_USER_SEARCHING,
+} from './bot.js';
+
+function initBot(): TelegramBot {
+  dotenv.config();
+  const token = process.env.TBOT_API_KEY;
+  const bot = new TelegramBot(token, { polling: true });
+  return bot;
 }
 
-/**
- * Returns a Promise<string> that resolves after a given time.
- *
- * @param {string} name - A name.
- * @param {number=} [delay=Delays.Medium] - A number of milliseconds to delay resolution of the Promise.
- * @returns {Promise<string>}
- */
-function delayedHello(
-  name: string,
-  delay: number = Delays.Medium,
-): Promise<string> {
-  return new Promise((resolve: (value?: string) => void) =>
-    setTimeout(() => resolve(`Hello, ${name}`), delay),
-  );
+async function main(): Promise<void> {
+  const bot = initBot();
+  bot.on('message', (msg) => {
+    const chatId = msg.chat.id;
+    const userId = msg.from.id;
+    const userState = getUserState(userId);
+
+    if (userState.staus === STATE_USER_IDLE) handleMovieSearch(bot, msg);
+    else if (userState.staus === STATE_USER_SEARCHING)
+      handleMovieSelection(bot, msg);
+    else bot.sendMessage(chatId, 'An error occured');
+  });
 }
 
-// Please see the comment in the .eslintrc.json file about the suppressed rule!
-// Below is an example of how to use ESLint errors suppression. You can read more
-// at https://eslint.org/docs/latest/user-guide/configuring/rules#disabling-rules
-
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export async function greeter(name: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
-  // The name parameter should be of type string. Any is used only to trigger the rule.
-  return await delayedHello(name, Delays.Long);
-}
+main();
