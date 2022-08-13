@@ -1,11 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
-import {
-  getListOfMoviesAsMessages,
-  getTorrentLinkFromTorrents,
-} from './messages.js';
+import { sendListOfMovies, sendListOfTorrents } from './messages.js';
 import { searchMovies } from './movies.js';
 import { Movie } from './types/movies.js';
-import { delay } from './utility.js';
 
 export const STATE_USER_IDLE = 0;
 export const STATE_USER_SEARCHING = 1;
@@ -57,15 +53,7 @@ export async function handleMovieSearch(
     const movies = await searchMovies(movieName);
 
     setUserState(userId, STATE_USER_SEARCHING, movies.data.movies);
-    const messages = getListOfMoviesAsMessages(movies);
-
-    for (let i = 0; i < messages.length; i++) {
-      bot.sendMessage(chatId, messages[i], {
-        parse_mode: 'HTML',
-        disable_web_page_preview: false,
-      });
-      await delay(1200);
-    }
+    await sendListOfMovies(bot, chatId, movies);
   } catch (e) {
     /* handle error */
     console.error(`main::handleMovieSearch failed to get movies.`, e);
@@ -84,7 +72,9 @@ export async function handleMovieSelection(
   try {
     const input = msg.text.replaceAll('/', '');
     if (isNaN(+input)) {
-      throw `input is not a number: ${input}`;
+      bot.sendMessage(chatId, 'Invalid input');
+      bot.sendMessage(chatId, 'Please select a movie by typing the number');
+      return;
     }
 
     const num = parseInt(input, 10);
@@ -96,16 +86,19 @@ export async function handleMovieSelection(
 
     const movies = getUserState(userId).data;
     if (num < 1 || num > movies.length) {
-      throw `input is out of range: ${num}`;
+      bot.sendMessage(chatId, 'Invalid input');
+      bot.sendMessage(chatId, 'Please select a movie by typing the number');
+      return;
     }
 
+    bot.sendMessage(chatId, 'Loading torrents...');
     const torrents = movies[num - 1].torrents;
-    bot.sendMessage(chatId, getTorrentLinkFromTorrents(torrents));
+    const movieName = movies[num - 1].title;
+    await sendListOfTorrents(bot, chatId, torrents, movieName);
     setUserState(userId, STATE_USER_IDLE, []);
   } catch (e) {
     /* handle error */
     console.error('bot::handleMovieSelection failed to select movie.', e);
-    bot.sendMessage(chatId, 'Invalid input');
-    bot.sendMessage(chatId, 'Please select a movie by typing the number');
+    bot.sendMessage(chatId, 'Something went wrong');
   }
 }
