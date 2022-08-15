@@ -1,4 +1,5 @@
 import TelegramBot from 'node-telegram-bot-api';
+import { getUserState, STATE_USER_SELECTION_MODE } from './states.js';
 import { MovieSearchResult, Torrent } from './types/movies.js';
 import { delay, downloadFileAsBuffer } from './utility.js';
 
@@ -6,6 +7,7 @@ export async function sendListOfMovies(
   bot: TelegramBot,
   chatId: number,
   searchResults: MovieSearchResult,
+  userId: number,
 ): Promise<void> {
   if (searchResults.data.movies.length === 0) {
     await bot.sendMessage(chatId, 'Failed to get movies');
@@ -23,6 +25,11 @@ export async function sendListOfMovies(
       disable_web_page_preview: false,
     });
     await delay(1200);
+
+    const state = getUserState(userId);
+    if (state.staus === STATE_USER_SELECTION_MODE) {
+      break;
+    }
   }
 }
 

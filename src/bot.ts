@@ -1,36 +1,13 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { sendListOfMovies, sendListOfTorrents } from './messages.js';
 import { searchMovies } from './movies.js';
-import { Movie } from './types/movies.js';
-
-export const STATE_USER_IDLE = 0;
-export const STATE_USER_SEARCHING = 1;
-
-interface UserState {
-  staus: number;
-  timestamp: number;
-  data: Movie[];
-}
-
-const State: { [key: number]: UserState } = {};
-
-function setUserState(userId: number, staus: number, data: Movie[]): void {
-  State[userId].staus = staus;
-  State[userId].data = data;
-}
-
-export function getUserState(userId: number): UserState {
-  if (State[userId]) return State[userId];
-
-  const newState: UserState = {
-    staus: STATE_USER_IDLE,
-    data: [],
-    timestamp: 0,
-  };
-
-  State[userId] = newState;
-  return newState;
-}
+import {
+  setUserState,
+  STATE_USER_SEARCHING,
+  STATE_USER_SELECTION_MODE,
+  STATE_USER_IDLE,
+  getUserState,
+} from './states.js';
 
 export async function handleMovieSearch(
   bot: TelegramBot,
@@ -53,7 +30,8 @@ export async function handleMovieSearch(
     const movies = await searchMovies(movieName);
 
     setUserState(userId, STATE_USER_SEARCHING, movies.data.movies);
-    await sendListOfMovies(bot, chatId, movies);
+    await sendListOfMovies(bot, chatId, movies, userId);
+    setUserState(userId, STATE_USER_SELECTION_MODE, movies.data.movies);
   } catch (e) {
     /* handle error */
     console.error(`main::handleMovieSearch failed to get movies.`, e);
