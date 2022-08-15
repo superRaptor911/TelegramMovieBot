@@ -31,6 +31,11 @@ export async function sendListOfMovies(
       break;
     }
   }
+
+  await bot.sendMessage(
+    chatId,
+    'Please select a movie by typing the number\n0 to exit',
+  );
 }
 
 export async function sendListOfTorrents(
