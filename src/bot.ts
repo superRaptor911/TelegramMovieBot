@@ -1,6 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { sendListOfMovies, sendListOfTorrents } from './messages.js';
 import { searchMovies } from './movies.js';
+import { writeUsageToSheet } from './sheets/googleSheet.js';
 import {
   setUserState,
   STATE_USER_SEARCHING,
@@ -15,8 +16,12 @@ export async function handleMovieSearch(
 ): Promise<void> {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
-  bot.sendMessage(chatId, 'Searching for movies...');
 
+  const username = msg.from.username;
+  const message = msg.text;
+  writeUsageToSheet(username, message);
+
+  bot.sendMessage(chatId, 'Searching for movies...');
   try {
     const movieName = msg.text.replaceAll('/', '');
     if (movieName == 'start') {

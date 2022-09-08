@@ -11,9 +11,9 @@ import { delay } from './utility.js';
 export async function searchMovies(
   query: string,
   limit = 10,
-  maxTries = 5,
+  maxTries = 2,
 ): Promise<MovieSearchResult> {
-  const retryDelay = 3000;
+  const retryDelay = 2000;
   let tries = 0;
 
   while (tries < maxTries) {

@@ -39,6 +39,7 @@ export function getUserState(userId: number): UserState {
 export function manageState(bot: TelegramBot, msg: TelegramBot.Message): void {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
+
   const userState = getUserState(userId);
 
   if (userState.staus === STATE_USER_IDLE) handleMovieSearch(bot, msg);
