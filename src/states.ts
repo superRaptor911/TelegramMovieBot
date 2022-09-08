@@ -18,7 +18,11 @@ export function setUserState(
   userId: number,
   staus: number,
   data: Movie[],
+  prevStatus?: number,
 ): void {
+  if (prevStatus && State[userId].staus !== prevStatus) {
+    return;
+  }
   State[userId].staus = staus;
   State[userId].data = data;
 }

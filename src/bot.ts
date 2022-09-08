@@ -36,7 +36,12 @@ export async function handleMovieSearch(
 
     setUserState(userId, STATE_USER_SEARCHING, movies.data.movies);
     await sendListOfMovies(bot, chatId, movies, userId);
-    setUserState(userId, STATE_USER_SELECTION_MODE, movies.data.movies);
+    setUserState(
+      userId,
+      STATE_USER_SELECTION_MODE,
+      movies.data.movies,
+      STATE_USER_SEARCHING,
+    );
   } catch (e) {
     /* handle error */
     console.error(`main::handleMovieSearch failed to get movies.`, e);

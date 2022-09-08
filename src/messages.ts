@@ -1,5 +1,5 @@
 import TelegramBot from 'node-telegram-bot-api';
-import { getUserState, STATE_USER_SELECTION_MODE } from './states.js';
+import { getUserState, STATE_USER_SEARCHING } from './states.js';
 import { MovieSearchResult, Torrent } from './types/movies.js';
 import { delay, downloadFileAsBuffer } from './utility.js';
 
@@ -15,6 +15,12 @@ export async function sendListOfMovies(
   }
 
   for (let i = 0; i < searchResults.data.movies.length; i++) {
+    // Check if the user is still in the same state
+    const state = getUserState(userId);
+    if (state.staus !== STATE_USER_SEARCHING) {
+      return;
+    }
+
     const movie = searchResults.data.movies[i];
     const msg = `${i + 1}. ${movie.title} [${movie.year}] <a href="${
       movie.medium_cover_image
@@ -25,11 +31,6 @@ export async function sendListOfMovies(
       disable_web_page_preview: false,
     });
     await delay(1200);
-
-    const state = getUserState(userId);
-    if (state.staus === STATE_USER_SELECTION_MODE) {
-      break;
-    }
   }
 
   await bot.sendMessage(
