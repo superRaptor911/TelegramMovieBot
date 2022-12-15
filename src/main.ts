@@ -1,6 +1,6 @@
 import TelegramBot from 'node-telegram-bot-api';
 import * as dotenv from 'dotenv';
-import { manageState } from './states.js';
+import { cleanExpiredStates, manageState } from './states.js';
 
 function initBot(): TelegramBot {
   dotenv.config();
@@ -15,5 +15,7 @@ async function main(): Promise<void> {
     manageState(bot, msg);
   });
 }
+
+setInterval(cleanExpiredStates, 3000);
 
 main();

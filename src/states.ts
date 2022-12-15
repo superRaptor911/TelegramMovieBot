@@ -1,6 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { handleMovieSearch, handleMovieSelection } from './bot.js';
 import { Movie } from './types/movies.js';
+import { isTimeOlderThan } from './utility.js';
 
 export const STATE_USER_IDLE = 0;
 export const STATE_USER_SEARCHING = 1;
@@ -25,6 +26,7 @@ export function setUserState(
   }
   State[userId].staus = staus;
   State[userId].data = data;
+  State[userId].timestamp = new Date().getTime();
 }
 
 export function getUserState(userId: number): UserState {
@@ -33,7 +35,7 @@ export function getUserState(userId: number): UserState {
   const newState: UserState = {
     staus: STATE_USER_IDLE,
     data: [],
-    timestamp: 0,
+    timestamp: new Date().getTime(),
   };
 
   State[userId] = newState;
@@ -53,4 +55,14 @@ export function manageState(bot: TelegramBot, msg: TelegramBot.Message): void {
   )
     handleMovieSelection(bot, msg);
   else bot.sendMessage(chatId, 'An error occured');
+}
+
+export function cleanExpiredStates(maxAge = 120): void {
+  const maxAgeInMs = maxAge * 1000;
+  for (const key in State) {
+    if (isTimeOlderThan(State[key].timestamp, maxAgeInMs)) {
+      console.log('Clearing state for user ' + key);
+      delete State[key];
+    }
+  }
 }

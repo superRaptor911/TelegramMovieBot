@@ -35,3 +35,8 @@ export async function downloadFileAsBuffer(url: string): Promise<Buffer> {
   const buf = Buffer.from(data);
   return buf;
 }
+
+export function isTimeOlderThan(timeInMs: number, limitInMs: number): boolean {
+  const curTime = new Date().getTime();
+  return curTime - timeInMs > limitInMs;
+}
