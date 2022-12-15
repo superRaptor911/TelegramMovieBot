@@ -57,7 +57,7 @@ export function manageState(bot: TelegramBot, msg: TelegramBot.Message): void {
   else bot.sendMessage(chatId, 'An error occured');
 }
 
-export function cleanExpiredStates(maxAge = 120): void {
+export function cleanExpiredStates(maxAge = 60): void {
   const maxAgeInMs = maxAge * 1000;
   for (const key in State) {
     if (isTimeOlderThan(State[key].timestamp, maxAgeInMs)) {

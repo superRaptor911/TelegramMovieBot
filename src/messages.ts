@@ -67,10 +67,12 @@ export async function sendListOfMovies(
     await sendMovieMessage(bot, movie, chatId, i);
   }
 
-  await bot.sendMessage(
+  const message = await bot.sendMessage(
     chatId,
     'Please select a movie by typing the number\n0 to exit',
   );
+
+  createMovieMessage(chatId, message.message_id);
 }
 
 export async function sendListOfTorrents(
@@ -98,7 +100,14 @@ export async function cleanExpiredMessage(bot: TelegramBot): Promise<void> {
     const expired = isTimeOlderThan(message.timestamp, 60000);
     if (expired) {
       const { chatId, messageId } = message;
-      bot.deleteMessage(chatId, String(messageId));
+      try {
+        bot
+          .deleteMessage(chatId, String(messageId))
+          .then(() => console.log('Cleared message ' + messageId));
+      } catch (e) {
+        /* handle error */
+        console.error('messages::cleanExpiredMessage failed to delete message');
+      }
     }
     return !expired;
   });
