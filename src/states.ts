@@ -1,7 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { handleMovieSearch, handleMovieSelection } from './bot.js';
 import { Movie } from './types/movies.js';
-import { isTimeOlderThan } from './utility.js';
+import { getTimestamp, isTimeOlderThan } from './utility.js';
 
 export const STATE_USER_IDLE = 0;
 export const STATE_USER_SEARCHING = 1;
@@ -26,7 +26,7 @@ export function setUserState(
   }
   State[userId].staus = staus;
   State[userId].data = data;
-  State[userId].timestamp = new Date().getTime();
+  State[userId].timestamp = getTimestamp();
 }
 
 export function getUserState(userId: number): UserState {
@@ -35,7 +35,7 @@ export function getUserState(userId: number): UserState {
   const newState: UserState = {
     staus: STATE_USER_IDLE,
     data: [],
-    timestamp: new Date().getTime(),
+    timestamp: getTimestamp(),
   };
 
   State[userId] = newState;

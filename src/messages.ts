@@ -1,7 +1,49 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { getUserState, STATE_USER_SEARCHING } from './states.js';
-import { MovieSearchResult, Torrent } from './types/movies.js';
-import { delay, downloadFileAsBuffer } from './utility.js';
+import { Movie, MovieSearchResult, Torrent } from './types/movies.js';
+import {
+  delay,
+  downloadFileAsBuffer,
+  getTimestamp,
+  isTimeOlderThan,
+} from './utility.js';
+
+interface MovieMessage {
+  chatId: number;
+  messageId: number;
+  timestamp: number;
+}
+
+let MovieMessages: MovieMessage[] = [];
+
+function createMovieMessage(chatId: number, messageId: number): void {
+  const message = {
+    chatId: chatId,
+    messageId: messageId,
+    timestamp: getTimestamp(),
+  };
+
+  MovieMessages.push(message);
+}
+
+async function sendMovieMessage(
+  bot: TelegramBot,
+  movie: Movie,
+  chatId: number,
+  index: number,
+): Promise<void> {
+  const msg = `${index + 1}. ${movie.title} [${movie.year}] <a href="${
+    movie.medium_cover_image
+  }">&#8205;</a>`;
+
+  const message = await bot.sendMessage(chatId, msg, {
+    parse_mode: 'HTML',
+    disable_web_page_preview: false,
+  });
+
+  createMovieMessage(chatId, message.message_id);
+  await delay(1200);
+}
 
 export async function sendListOfMovies(
   bot: TelegramBot,
@@ -22,15 +64,7 @@ export async function sendListOfMovies(
     }
 
     const movie = searchResults.data.movies[i];
-    const msg = `${i + 1}. ${movie.title} [${movie.year}] <a href="${
-      movie.medium_cover_image
-    }">&#8205;</a>`;
-
-    await bot.sendMessage(chatId, msg, {
-      parse_mode: 'HTML',
-      disable_web_page_preview: false,
-    });
-    await delay(1200);
+    await sendMovieMessage(bot, movie, chatId, i);
   }
 
   await bot.sendMessage(
@@ -57,4 +91,15 @@ export async function sendListOfTorrents(
       },
     );
   }
+}
+
+export async function cleanExpiredMessage(bot: TelegramBot): Promise<void> {
+  MovieMessages = MovieMessages.filter((message) => {
+    const expired = isTimeOlderThan(message.timestamp, 60000);
+    if (expired) {
+      const { chatId, messageId } = message;
+      bot.deleteMessage(chatId, String(messageId));
+    }
+    return !expired;
+  });
 }
