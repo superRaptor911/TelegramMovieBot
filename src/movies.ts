@@ -43,11 +43,11 @@ export async function searchMovies(
 }
 
 // Function to get details for a movie
-export async function getMovieDetails(
+export async function getMovieDetailsFromID(
   movieId: number,
-  maxTries = 5,
+  maxTries = 3,
 ): Promise<MovieDetails | null> {
-  const retryDelay = 3000;
+  const retryDelay = 1000;
   let tries = 0;
 
   while (tries < maxTries) {

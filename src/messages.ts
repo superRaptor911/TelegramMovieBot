@@ -1,5 +1,4 @@
 import TelegramBot from 'node-telegram-bot-api';
-import { getUserState, STATE_USER_SEARCHING } from './states.js';
 import { Movie, MovieSearchResult, Torrent } from './types/movies.js';
 import {
   delay,
@@ -14,16 +13,16 @@ interface MovieMessage {
   timestamp: number;
 }
 
-let MovieMessages: MovieMessage[] = [];
+let TrackedMessages: MovieMessage[] = [];
 
-function createMovieMessage(chatId: number, messageId: number): void {
-  const message = {
-    chatId: chatId,
-    messageId: messageId,
+export function trackMessage(message: TelegramBot.Message): void {
+  const msg = {
+    chatId: message.chat.id,
+    messageId: message.message_id,
     timestamp: getTimestamp(),
   };
 
-  MovieMessages.push(message);
+  TrackedMessages.push(msg);
 }
 
 async function sendMovieMessage(
@@ -41,7 +40,7 @@ async function sendMovieMessage(
     disable_web_page_preview: false,
   });
 
-  createMovieMessage(chatId, message.message_id);
+  trackMessage(message);
   await delay(1200);
 }
 
@@ -49,7 +48,6 @@ export async function sendListOfMovies(
   bot: TelegramBot,
   chatId: number,
   searchResults: MovieSearchResult,
-  userId: number,
 ): Promise<void> {
   if (searchResults.data.movies.length === 0) {
     await bot.sendMessage(chatId, 'Failed to get movies');
@@ -58,21 +56,41 @@ export async function sendListOfMovies(
 
   for (let i = 0; i < searchResults.data.movies.length; i++) {
     // Check if the user is still in the same state
-    const state = getUserState(userId);
-    if (state.staus !== STATE_USER_SEARCHING) {
-      return;
-    }
-
     const movie = searchResults.data.movies[i];
     await sendMovieMessage(bot, movie, chatId, i);
   }
 
+  const options = createSelectionButtons(searchResults.data.movies);
   const message = await bot.sendMessage(
     chatId,
-    'Please select a movie by typing the number\n0 to exit',
+    'Please select a movie',
+    options,
   );
 
-  createMovieMessage(chatId, message.message_id);
+  trackMessage(message);
+}
+
+function createSelectionButtons(
+  movies: Movie[],
+): TelegramBot.SendMessageOptions {
+  const buttons: TelegramBot.InlineKeyboardButton[][] = [];
+
+  for (let i = 0; i < movies.length; i++) {
+    buttons.push([
+      {
+        text: `${i + 1}`,
+        callback_data: `${movies[i].id}`,
+      },
+    ]);
+  }
+
+  const options: TelegramBot.SendMessageOptions = {
+    reply_markup: {
+      inline_keyboard: buttons,
+    },
+  };
+
+  return options;
 }
 
 export async function sendListOfTorrents(
@@ -96,7 +114,7 @@ export async function sendListOfTorrents(
 }
 
 export async function cleanExpiredMessage(bot: TelegramBot): Promise<void> {
-  MovieMessages = MovieMessages.filter((message) => {
+  TrackedMessages = TrackedMessages.filter((message) => {
     const expired = isTimeOlderThan(message.timestamp, 60000);
     if (expired) {
       const { chatId, messageId } = message;
